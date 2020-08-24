@@ -24,7 +24,7 @@ public class ConnectionService{
             conn = DriverManager.getConnection(
                     "jdbc:postgresql://dbrev.ctha7md0f2cd.us-west-1.rds.amazonaws.com:5432/postgres",
                     "drichardson513",
-                    "password1");
+                    "fakepassword");
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
