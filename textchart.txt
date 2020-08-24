@@ -1,0 +1,14 @@
+
+Screens:
+	Home
+
+Handlers:
+    x Connection Handler
+	x Login handler
+	x registration handler
+	x dashboard handler
+	x account handler
+		creation
+		deletion
+		viewHistory
+		
