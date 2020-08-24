@@ -29,3 +29,5 @@ out/
 # IntelliJ-specific files/folders
 *.iml
 .idea/
+
+*.properties
