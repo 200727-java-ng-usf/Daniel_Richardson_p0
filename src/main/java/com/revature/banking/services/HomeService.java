@@ -1,8 +1,6 @@
 package com.revature.banking.services;
 
 import com.revature.banking.models.AppUser;
-import com.revature.banking.services.Init;
-import com.revature.banking.services.Service;
 
 import java.io.BufferedReader;
 

@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class AccountService{
@@ -80,6 +81,7 @@ public class AccountService{
     }
 
     public boolean displayAccounts(AppUser user){
+        //todo rename to get acct info
         boolean exists = false;
         //sql statement to retrieve and display account number / balance
         try (Connection conn = ConnectionService.getInstance().getConnection()) {
@@ -95,10 +97,14 @@ public class AccountService{
             ResultSet rs = pstmt.executeQuery();
 
             if(rs.next()) {
-                System.out.print("Account: ");
-                System.out.println(rs.getString("account"));
-                System.out.print("Balance: ");
-                System.out.println(rs.getDouble("balance"));
+                System.out.print("Account: #");
+                String account = rs.getString("account");
+                System.out.println(account);
+                user.setAccount(account); //also set the user account for later use
+                System.out.print("Balance: $");
+                Double balance = rs.getDouble("balance");
+                System.out.println(balance);
+                user.setAccountBalance(balance); //also set the user balance
                 exists = true;
             } else {
                 System.out.println("No account found.");
@@ -160,29 +166,33 @@ public class AccountService{
         //prompt for increase amount (simulating acct money movement)
         //checks for overflows, negative values
         //sql update
-
-        BufferedReader console = ConsoleService.getInstance().getConsole();
-        System.out.println("Enter amount to deposit: ");
         try{
-            boolean valid = false;
-            String amount = null;
-            int deposit = 0;
-
-            //uses pattern regex to detect non-numeric characters
-            while(!valid){
-                System.out.print("> ");
-                amount = console.readLine();
-                if(Pattern.matches("[a-zA-Z]+", amount)){
-                    //todo validate commas/decimal places for foreign users
-                    valid = false;
-                    System.err.println("Invalid number. Try again.");
-                } else {
-                    valid = true;
-                }
+            BufferedReader console = ConsoleService.getInstance().getConsole();
+            System.out.println("Enter amount to deposit: ");
+            double deposit = 0;
+            System.out.print("> $");
+            deposit = Double.parseDouble(console.readLine());
+            if(deposit<0){
+                deposit = 0;
             }
-            deposit = Integer.parseInt(amount);
+            deposit = UtilService.getInstance().decimalRounding(deposit);
+            //sql updates
+            try (Connection conn = ConnectionService.getInstance().getConnection()) {
+                String sql = "update project0.account_balance " +
+                        "set balance = balance + ? " +
+                        "where account = ? ";
 
-            //todo include sql statement to update row
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+                pstmt.setDouble(1, deposit);
+                pstmt.setString(2, user.getAccount());
+                pstmt.executeUpdate();
+                user.setAccountBalance(user.getAccountBalance()+deposit); //update user balance
+                System.out.println("Deposited: $"+deposit);
+                render(user);
+            } catch (SQLException sqle) {
+                sqle.printStackTrace();
+                System.err.println("Something went wrong.");
+            }
 
 
         } catch (Exception e){
@@ -196,9 +206,43 @@ public class AccountService{
         //include atm simulation
         //checks for negative values, overdrafts
         //sql update
+        try{
+            double withdraw = 0;
+            BufferedReader console = ConsoleService.getInstance().getConsole();
+            System.out.println("Enter amount to withdraw: ");
+            System.out.print("> $");
+            withdraw = Double.parseDouble(console.readLine());
+            if(withdraw<0){
+                withdraw = 0;
+            }
+            withdraw = UtilService.getInstance().decimalRounding(withdraw);
 
+            if(withdraw >= user.getAccountBalance()){
+                withdraw = user.getAccountBalance();
+            }
+
+            //sql updates
+            try (Connection conn = ConnectionService.getInstance().getConnection()) {
+                String sql = "update project0.account_balance " +
+                        "set balance = balance - ? " +
+                        "where account = ? ";
+
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+                pstmt.setDouble(1, withdraw);
+                pstmt.setString(2, user.getAccount());
+                pstmt.executeUpdate();
+                user.setAccountBalance(user.getAccountBalance()-withdraw); //update user balance
+                System.out.println("Withdrew: $"+withdraw);
+                render(user);
+            } catch (SQLException sqle) {
+                sqle.printStackTrace();
+                System.err.println("Something went wrong.");
+            }
+
+
+        } catch (Exception e){
+            System.err.println("Invalid input");
+            render(user);
+        }
     }
-//    public void viewHistory(AppUser user){
-//          //this would use a separate table with each row having account, transaction, date/timestamp
-//    }
 }

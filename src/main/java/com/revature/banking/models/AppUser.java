@@ -16,6 +16,8 @@ public class AppUser {
     private Integer id;
     private String password;
     private String email;
+    private String account;
+    private double accountBalance;
 
     //Constructors: ----------------------------
     // no args
@@ -31,6 +33,21 @@ public class AppUser {
     }
 
     // getters and setters ---------------------------
+
+    public String getAccount(){
+        return account;
+    }
+    public void setAccount(String account){
+        this.account = account;
+    }
+
+    public double getAccountBalance() {
+        return accountBalance;
+    }
+
+    public void setAccountBalance(Double accountBalance) {
+        this.accountBalance = accountBalance;
+    }
 
     public Integer getId() {
         return id;
