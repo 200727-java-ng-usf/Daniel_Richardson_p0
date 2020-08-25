@@ -2,14 +2,18 @@ package com.revature.banking.services;
 
 import com.revature.banking.exceptions.InvalidRequestException;
 import com.revature.banking.models.AppUser;
+import com.revature.banking.screens.HomeScreen;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
+
+/**
+ * RegistrationService
+ * Checks for taken emails on db. Builds sql query to add new app_user
+ */
 
 public class RegistrationService{
     //eager singleton
@@ -27,48 +31,11 @@ public class RegistrationService{
         throw new CloneNotSupportedException();
     }
 
-
-    public void render() {
-
-        String email = null;
-        String password = null;
-
-        try {
-            boolean valid = false;
-            while(!valid){
-                System.out.println("Create new human banking account:");
-                System.out.print("Email: ");
-                email = ConsoleService.getInstance().getConsole().readLine();
-                System.out.print("Password: ");
-                password = ConsoleService.getInstance().getConsole().readLine();
-
-
-                if (email == null || email.trim().equals("") || password == null || password.trim().equals("")) {
-                    System.err.println("Invalid input");
-                    valid = false;
-                } else {
-                    valid = true;
-                }
-            }
-
-            //Check to see if email already taken
-            if(checkDuplicateEmail(email)){
-                System.err.println("Email taken.");
-                HomeService.getInstance().render(); //send to home screen
-            } else {
-                register(email, password);  //send to sql registration
-                AppUser newUser = new AppUser(email, password); //auto-login user
-                DashboardService.getInstance().render(newUser); //send to dashboard
-            }
-        } catch (InvalidRequestException e) {
-            System.err.println("Registration unsuccessful, invalid values provided.");
-        } catch (Exception e) {
-            System.err.println("[ERROR] - An unexpected exception occurred: " + e.getMessage());
-            System.out.println("[LOG] - Shutting down application");
-
-        }
-
-    }
+    /**
+     *
+     * @param email Checks on db for existing users via email
+     * @return boolean on whether email exists on db or not
+     */
 
     private boolean checkDuplicateEmail(String email){
         boolean exists = false;
@@ -91,21 +58,39 @@ public class RegistrationService{
         return exists;
     }
 
-    private void register(String email, String password){
-        try (Connection conn = ConnectionService.getInstance().getConnection()) {
-            String sql = "INSERT INTO project0.app_users (email, password) " +
-                    "VALUES (?, ?)";
+    /**
+     *
+     * @param email proposed email for registration
+     * @param password user's new password
+     * @return Returns newly created user from given email/password,
+     * sets ID in next screen from serialized column in db
+     */
 
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, email);
-            pstmt.setString(2, password);
-            pstmt.executeUpdate();
+    public AppUser register(String email, String password){
+        AppUser user = null;
+        //Check to see if email already taken
+        if(checkDuplicateEmail(email)){
+            System.err.println("Email taken.");
+            RouterService.getInstance().route("/home"); //back to start
+        } else {
+
+            try (Connection conn = ConnectionService.getInstance().getConnection()) {
+                String sql = "INSERT INTO project0.app_users (email, password) " +
+                        "VALUES (?, ?)";
+
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+                pstmt.setString(1, email);
+                pstmt.setString(2, password);
+                pstmt.executeUpdate();
 
 
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            System.err.println("Something went wrong.");
+            } catch (SQLException sqle) {
+                sqle.printStackTrace();
+                System.err.println("Something went wrong.");
+            }
+            user = new AppUser(email, password);
         }
+        return user;
     }
 
 }

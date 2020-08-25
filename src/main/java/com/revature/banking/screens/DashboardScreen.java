@@ -1,19 +1,26 @@
-package com.revature.banking.services;
+package com.revature.banking.screens;
 
 import com.revature.banking.models.AppUser;
+import com.revature.banking.services.AccountService;
+import com.revature.banking.services.ConsoleService;
+import com.revature.banking.services.RouterService;
 
 import java.io.BufferedReader;
 
-public class DashboardService{
-    //eager singleton
-    private static DashboardService dashboardService = new DashboardService();
+/**
+ * Offers user options to logout or view/handle accounts
+ */
 
-    private DashboardService() {
+public class DashboardScreen {
+    //eager singleton
+    private static DashboardScreen dashboardScreen = new DashboardScreen();
+
+    private DashboardScreen() {
         super();
     }
 
-    public static DashboardService getInstance() {
-        return dashboardService;
+    public static DashboardScreen getInstance() {
+        return dashboardScreen;
     }
     @Override
     protected Object clone() throws CloneNotSupportedException {
@@ -21,7 +28,6 @@ public class DashboardService{
     }
 
     public void render(AppUser user){
-
         user.setId();
         System.out.println(user.toString());
         BufferedReader console = ConsoleService.getInstance().getConsole();
@@ -36,10 +42,10 @@ public class DashboardService{
 
             switch (userSelection) {
                 case "1":
-                    AccountService.getInstance().render(user);
+                    RouterService.getInstance().route("/account",user);
                     break;
                 case "2":
-                    HomeService.getInstance().render(user);
+                    RouterService.getInstance().route("/home",user);
                     break;
                 default:
                     System.out.println("[LOG] - Invalid selection!");

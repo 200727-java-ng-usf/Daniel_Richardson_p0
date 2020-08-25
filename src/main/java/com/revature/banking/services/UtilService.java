@@ -16,6 +16,11 @@ public class UtilService {
         throw new CloneNotSupportedException();
     }
 
+    /**
+     * @param num the number to be rounded to 2 decimal places
+     * @return the rounded number .xx
+     */
+
     public double decimalRounding(Double num){
         return Math.floor(num * 100) / 100;
     }

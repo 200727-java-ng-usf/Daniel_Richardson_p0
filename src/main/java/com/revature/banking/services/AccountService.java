@@ -1,16 +1,20 @@
 package com.revature.banking.services;
 
 import com.revature.banking.models.AppUser;
+import com.revature.banking.screens.AccountScreen;
+import com.revature.banking.screens.DashboardScreen;
+import com.revature.banking.screens.HomeScreen;
 
 import java.io.BufferedReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Random;
-import java.util.Scanner;
-import java.util.regex.Pattern;
+
+/**
+ * Handles acct/balance retrieval, acct creation, deposits and withdrawals
+ */
 
 public class AccountService{
     //eager singleton
@@ -28,60 +32,13 @@ public class AccountService{
         throw new CloneNotSupportedException();
     }
 
-    public void render(AppUser user){
-        user.selfAuthenticate();
+    /**
+     * Displays acct/balance and sets user object fields
+     * @param user to find acct on db
+     * @return returns existence of acct (to later prompt acct creation)
+     */
 
-        BufferedReader console = ConsoleService.getInstance().getConsole();
-        if(!displayAccounts(user)){ //method automatically displays account info, otherwise prompts creation
-            System.out.println("Create new account?");
-            System.out.println("1) Yes");
-            System.out.println("2) Cancel");
-            try{
-                System.out.print("> ");
-                String userSelection = console.readLine();
-                switch (userSelection) {
-                    case "1":
-                        createAccount(user);
-                        break;
-                    default:
-                        DashboardService.getInstance().render(user);
-                }
-            } catch (Exception e){
-                System.err.println("Invalid input");
-                render(user);
-            }
-        }
-
-        //Deposit, withdraw options
-        System.out.println("1) Deposit");
-        System.out.println("2) Withdraw");
-        System.out.println("3) Logout");
-        try{
-            System.out.print("> ");
-            String userSelection = console.readLine();
-            switch (userSelection) {
-                case "1":
-                    deposit(user);
-                    break;
-                case "2":
-                    withdrawal(user);
-                    break;
-                case "3":
-                    HomeService.getInstance().render(user);
-                    break;
-                default:
-                    DashboardService.getInstance().render(user);
-            }
-        } catch (Exception e){
-            System.err.println("Invalid input");
-            render(user);
-        }
-
-
-    }
-
-    public boolean displayAccounts(AppUser user){
-        //todo rename to get acct info
+    public boolean getAccounts(AppUser user){
         boolean exists = false;
         //sql statement to retrieve and display account number / balance
         try (Connection conn = ConnectionService.getInstance().getConnection()) {
@@ -100,11 +57,12 @@ public class AccountService{
                 System.out.print("Account: #");
                 String account = rs.getString("account");
                 System.out.println(account);
-                user.setAccount(account); //also set the user account for later use
+                user.setAccount(account); //set user acct field
+
                 System.out.print("Balance: $");
                 Double balance = rs.getDouble("balance");
                 System.out.println(balance);
-                user.setAccountBalance(balance); //also set the user balance
+                user.setAccountBalance(balance); //set user balance field
                 exists = true;
             } else {
                 System.out.println("No account found.");
@@ -116,6 +74,11 @@ public class AccountService{
         }
         return exists;
     }
+
+    /**
+     * Creates a new acct and deposits 100 currency as a cute bonus
+     * @param user User used to match id with new account
+     */
 
     public void createAccount(AppUser user){
         //sql statement to make account, using user id
@@ -154,13 +117,20 @@ public class AccountService{
             pstmt.setString(1, numStr);
             pstmt.setDouble(2, 100.00);
             pstmt.executeUpdate();
-            AccountService.getInstance().render(user);
+
+            //re-renders accounts screen
+            AccountScreen.getInstance().render(user);
+
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
     }
 
 
+    /**
+     * Handles deposits
+     * @param user required to pull acct/balance info for validation
+     */
 
     public void deposit(AppUser user){
         //prompt for increase amount (simulating acct money movement)
@@ -188,21 +158,26 @@ public class AccountService{
                 pstmt.executeUpdate();
                 user.setAccountBalance(user.getAccountBalance()+deposit); //update user balance
                 System.out.println("Deposited: $"+deposit);
-                render(user);
+                System.out.println("---");
+                AccountScreen.getInstance().render(user);
+
             } catch (SQLException sqle) {
                 sqle.printStackTrace();
                 System.err.println("Something went wrong.");
             }
-
-
         } catch (Exception e){
             System.err.println("Invalid input");
-            render(user);
+            System.out.println("---");
+            AccountScreen.getInstance().render(user);
         }
-
-
     }
-    public void withdrawal(AppUser user){
+
+    /**
+     * Handles withdrawals
+     * @param user Required to validate acct/balance
+     */
+
+    public void withdraw(AppUser user){
         //include atm simulation
         //checks for negative values, overdrafts
         //sql update
@@ -233,7 +208,8 @@ public class AccountService{
                 pstmt.executeUpdate();
                 user.setAccountBalance(user.getAccountBalance()-withdraw); //update user balance
                 System.out.println("Withdrew: $"+withdraw);
-                render(user);
+                System.out.println("---");
+                AccountScreen.getInstance().render(user);
             } catch (SQLException sqle) {
                 sqle.printStackTrace();
                 System.err.println("Something went wrong.");
@@ -242,7 +218,8 @@ public class AccountService{
 
         } catch (Exception e){
             System.err.println("Invalid input");
-            render(user);
+            System.out.println("---");
+            AccountScreen.getInstance().render(user);
         }
     }
 }

@@ -1,8 +1,7 @@
 package com.revature.banking.models;
 
 import com.revature.banking.services.ConnectionService;
-import com.revature.banking.services.DashboardService;
-import com.revature.banking.services.HomeService;
+import com.revature.banking.screens.HomeScreen;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,6 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
 
+
+//todo dao object pattern
 public class AppUser {
 
     // fields/attributes
@@ -109,7 +110,7 @@ public class AppUser {
                 this.id = null;
                 this.email = null;
                 this.password = null; //clean the slate
-                HomeService.getInstance().render(); //send back to start
+                HomeScreen.getInstance().render(); //send back to start
             }
         } catch (SQLException sqle) {
             sqle.printStackTrace();
