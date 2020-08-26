@@ -49,8 +49,13 @@ public class AccountScreen {
                         //call acct creation method
                         AccountService.getInstance().createAccount(user);
                         break;
+                    case "2":
+                        //back to dash
+                        RouterService.getInstance().route("/dashboard", user);
+                        break;
                     default:
                         //send back to dashboard
+                        System.err.println("Invalid.");
                         RouterService.getInstance().route("/dashboard", user);
                 }
             } catch (Exception e){

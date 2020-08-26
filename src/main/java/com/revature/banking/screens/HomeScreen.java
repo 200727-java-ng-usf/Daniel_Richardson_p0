@@ -16,7 +16,7 @@ public class HomeScreen {
     private static HomeScreen homeScreen = new HomeScreen();
     private HomeScreen() {
         super();
-        System.out.println("[HomeScreen Instantiated]");
+        //System.out.println("[HomeScreen Instantiated]");
     }
     public static HomeScreen getInstance() {
         return homeScreen;

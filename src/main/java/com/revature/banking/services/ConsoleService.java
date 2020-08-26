@@ -11,7 +11,7 @@ public class ConsoleService{
 
     private ConsoleService() {
         super();
-        System.out.println("[Console started]");
+        //System.out.println("[Console started]");
         console = new BufferedReader(new InputStreamReader(System.in));
     }
 

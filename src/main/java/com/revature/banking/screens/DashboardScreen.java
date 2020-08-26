@@ -29,7 +29,7 @@ public class DashboardScreen {
 
     public void render(AppUser user){
         user.setId();
-        System.out.println(user.toString());
+        //System.out.println(user.toString());
         BufferedReader console = ConsoleService.getInstance().getConsole();
 
         System.out.println("Welcome to your dashboard.");
